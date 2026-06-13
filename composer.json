@@ -2,7 +2,7 @@
     "name": "dept-of-scrapyard-robotics/st77xx",
     "description": "Drive ST77xx family of TFT LCD displays over SPI with PHP",
     "type": "library",
-    "version": "0.4.1",
+    "version": "0.4.3",
     "keywords": [
         "framework",
         "scrapyard-io"
