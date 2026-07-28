@@ -2,25 +2,29 @@
 
 namespace DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Concerns;
 
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735GammaNegative;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735GammaPositive;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735IdleModeFrameRateControl;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735MADControl;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735NormalFrameRateControl;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735PartialModeFrameRateControl;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735PowerControl1;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735PowerControl2;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735PowerControl3;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735PowerControl4;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735PowerControl5;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735VCOMControl1;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735GammaNegative;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735GammaPositive;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735IdleModeFrameRateControl;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735MADControl;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735NormalFrameRateControl;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735PartialModeFrameRateControl;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735PowerControl1;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735PowerControl2;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735PowerControl3;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735PowerControl4;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735PowerControl5;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735VCOMControl1;
 use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Enums\ST7735ColorMode;
 use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Enums\ST7735OpCode;
-use Exception;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST77xxException;
 
 trait ST7735API
 {
     use ST7735InternalAPI;
+
+    protected bool $display_on = false;
+
+    protected bool $sleep_mode_on = false;
 
     public function displayOn(): void
     {
@@ -50,56 +54,68 @@ trait ST7735API
     public function setFrameRateControlNormal(ST7735NormalFrameRateControl $control): void
     {
         $this->command(ST7735OpCode::FRAME_RATE_CONTROL_NORMAL, $control->toBytes());
+        $this->_nfc = $control;
     }
 
     public function setFrameRateControlIdle(ST7735IdleModeFrameRateControl $control): void
     {
         $this->command(ST7735OpCode::FRAME_RATE_CONTROL_IDLE, $control->toBytes());
+        $this->_ifc = $control;
     }
 
     public function setFrameRateControlPartial(ST7735PartialModeFrameRateControl $control): void
     {
         $this->command(ST7735OpCode::FRAME_RATE_CONTROL_PARTIAL, $control->toBytes());
+        $this->_pfc = $control;
     }
 
     public function setPowerControl1(ST7735PowerControl1 $register): void
     {
         $this->command(ST7735OpCode::POWER_CONTROL_1, $register->toBytes());
+        $this->_power_control_1 = $register;
     }
 
     public function setPowerControl2(ST7735PowerControl2 $register): void
     {
         $this->command(ST7735OpCode::POWER_CONTROL_2, [$register->toByte()]);
+        $this->_power_control_2 = $register;
     }
 
     public function setPowerControl3(ST7735PowerControl3 $register): void
     {
         $this->command(ST7735OpCode::POWER_CONTROL_3, $register->toBytes());
+        $this->_power_control_3 = $register;
     }
 
     public function setPowerControl4(ST7735PowerControl4 $register): void
     {
         $this->command(ST7735OpCode::POWER_CONTROL_4, $register->toBytes());
+        $this->_power_control_4 = $register;
     }
 
     public function setPowerControl5(ST7735PowerControl5 $register): void
     {
         $this->command(ST7735OpCode::POWER_CONTROL_5, $register->toBytes());
+        $this->_power_control_5 = $register;
     }
 
     public function setVComControl(ST7735VCOMControl1 $register): void
     {
         $this->command(ST7735OpCode::VCOM_CONTROL_1, [$register->toByte()]);
+        $this->_v_com_ctrl = $register;
+
     }
 
     public function displayInversionOn(): void
     {
         $this->command(ST7735OpCode::DISPLAY_INVERSION_ON);
+        $this->_invert_display = true;
     }
 
     public function displayInversionOff(): void
     {
         $this->command(ST7735OpCode::DISPLAY_INVERSION_OFF);
+        $this->_invert_display = false;
     }
 
     public function displayNormalMode(): void
@@ -115,20 +131,23 @@ trait ST7735API
     public function setMADControl(ST7735MADControl $control): void
     {
         $this->command(ST7735OpCode::MEMORY_ACCESS_CONTROL, [$control->toByte()]);
+        $this->_mad_ctrl = $control;
     }
 
     public function setGammaPositive(ST7735GammaPositive $gamma_positive): void
     {
         $this->command(ST7735OpCode::GAMMA_CORRECTION_POSITIVE, $gamma_positive->toBytes());
+        $this->_gamma_positive = $gamma_positive;
     }
 
     public function setGammaNegative(ST7735GammaNegative $gamma_negative): void
     {
         $this->command(ST7735OpCode::GAMMA_CORRECTION_NEGATIVE, $gamma_negative->toBytes());
+        $this->_gamma_negative = $gamma_negative;
     }
 
     /**
-     * @throws Exception
+     * @throws ST77xxException
      */
     public function setPixelFormat(ST7735ColorMode|int $color_mode): void
     {
@@ -137,7 +156,7 @@ trait ST7735API
                 12 => ST7735ColorMode::COLOR12,
                 16 => ST7735ColorMode::COLOR16,
                 18 => ST7735ColorMode::COLOR18,
-                default => throw new Exception("Invalid color mode: $color_mode")
+                default => throw new ST77xxException("Invalid color mode: $color_mode")
             };
         }
 
@@ -159,9 +178,28 @@ trait ST7735API
         ]);
     }
 
-    public function writeFrame(array $data): void
+    public function setPartialDisplayMode(bool $on): void
     {
-        $this->command(ST7735OpCode::WRITE_MEMORY_START);
-        $this->data($data);
+        $on ? $this->displayPartialMode() : $this->displayNormalMode();
+    }
+
+    public function setNormalDisplayMode(bool $on): void
+    {
+        $on ? $this->displayNormalMode() : $this->displayPartialMode();
+    }
+
+    public function setDisplayInversion(bool $on): void
+    {
+        $on ? $this->displayInversionOn() : $this->displayInversionOff();
+    }
+
+    public function setSleepMode(bool $on): void
+    {
+        $on ? $this->displayOn() : $this->displayOff();
+    }
+
+    public function setDisplay(bool $on): void
+    {
+        $on ? $this->displayOn() : $this->displayOff();
     }
 }

@@ -2,202 +2,267 @@
 
 namespace DeptOfScrapyardRobotics\Displays\ST77xx\ST7735;
 
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Adapters\ST7735DataCarrier;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735GammaNegative;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735GammaPositive;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735IdleModeFrameRateControl;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735MADControl;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735NormalFrameRateControl;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735PartialModeFrameRateControl;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735PowerControl1;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735PowerControl2;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735PowerControl3;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735PowerControl4;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735PowerControl5;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735VCOMControl1;
 use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Concerns\ST7735API;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735GammaNegative;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735GammaPositive;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735IdleModeFrameRateControl;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735MADControl;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735NormalFrameRateControl;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735PartialModeFrameRateControl;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735PowerControl1;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735PowerControl2;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735PowerControl3;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735PowerControl4;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735PowerControl5;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735VCOMControl1;
 use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Enums\ST7735ColorMode;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Exceptions\ST7735Exception;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Factory\ST7735Factory;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Enums\ST7735OpCode;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST77xxCarrierTransport;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST77xxException;
 use Exception;
-use RealityInterface\Displays\Attributes\OutputsColor;
-use RealityInterface\Displays\Contracts\Applied\FullColorTFT\FullColorDisplayInterface;
-use RealityInterface\Displays\EmbeddedDisplay;
-use ScrapyardIO\NutsAndBolts\DataObjects\DumpedBuffer;
-use ScrapyardIO\NutsAndBolts\DataObjects\FormatSpec;
-use ScrapyardIO\NutsAndBolts\Enums\BitDepth;
-use ScrapyardIO\NutsAndBolts\Enums\Endianness;
-use ScrapyardIO\NutsAndBolts\Enums\PixelFormat;
-use ScrapyardIO\NutsAndBolts\Enums\ScanDirection;
-use Waveforms\Carriers\GPIO\GPIO;
-use Waveforms\Carriers\SPI\SPI;
+use Fabricate\Contracts\Circuits\Attributes\IntegratedCircuit;
+use Fabricate\Contracts\Circuits\IntegratedCircuit as CircuitContract;
+use Fabricate\Contracts\Displays\Interfaces\FullColorDisplay;
+use Fabricate\Contracts\Displays\Interfaces\PartiallyRefreshable;
+use Fabricate\Contracts\NutsAndBolts\BootSequence;
+use Fabricate\Framebuffers\DataObjects\DumpedBuffer;
+use Fabricate\Framebuffers\FormatSpec;
+use GeneralPurposeIO\Digital\DigitalIO;
+use GeneralPurposeIO\Digital\DigitalOutputPin;
+use GeneralPurposeIO\SPI\SPI;
+use GeneralPurposeIO\SPI\SPIDevice;
 
-#[OutputsColor]
-class ST7735 extends EmbeddedDisplay implements FullColorDisplayInterface
+#[IntegratedCircuit('SPI', 'DigitalIO')]
+class ST7735 implements CircuitContract, BootSequence, FullColorDisplay, PartiallyRefreshable
 {
     use ST7735API;
 
-    protected bool $booted = false;
-
-    protected bool $display_on = false;
-
-    protected bool $sleep_mode_on = false;
+    protected FormatSpec $format_spec;
 
     /**
      * @throws Exception
      */
     public function __construct(
-        protected readonly ST7735DataCarrier $carrier,
-        int $width,
-        int $height,
-        ST7735NormalFrameRateControl $nfc,
-        ST7735IdleModeFrameRateControl $ifc,
-        ST7735PartialModeFrameRateControl $pfc,
-        ST7735PowerControl1 $pwr_ctrl1,
-        ST7735PowerControl2 $pwr_ctrl2,
-        ST7735PowerControl3 $pwr_ctrl3,
-        ST7735PowerControl4 $pwr_ctrl4,
-        ST7735PowerControl5 $pwr_ctrl5,
-        ST7735VCOMControl1 $v_com_ctrl,
-        ST7735MADControl $mad_ctrl,
-        protected ST7735ColorMode $_color_mode,
-        ST7735GammaPositive $gamma_positive,
-        ST7735GammaNegative $gamma_negative,
+        protected ST77xxCarrierTransport $transport,
+        protected int $width,
+        protected int $height,
+        protected int $max_packet_size,
         protected int $x_offset,
         protected int $y_offset,
-        protected bool $invert_display,
+        protected bool $_invert_display,
+        protected ST7735NormalFrameRateControl $_nfc,
+        protected ST7735IdleModeFrameRateControl $_ifc,
+        protected ST7735PartialModeFrameRateControl $_pfc,
+        protected ST7735PowerControl1 $_power_control_1,
+        protected ST7735PowerControl2 $_power_control_2,
+        protected ST7735PowerControl3 $_power_control_3,
+        protected ST7735PowerControl4 $_power_control_4,
+        protected ST7735PowerControl5 $_power_control_5,
+        protected ST7735VCOMControl1 $_v_com_ctrl,
+        protected ST7735MADControl $_mad_ctrl,
+        protected ST7735ColorMode $_color_mode,
+        protected ST7735GammaPositive $_gamma_positive,
+        protected ST7735GammaNegative $_gamma_negative,
+        bool $boot_now = false,
     ) {
-        $this->boot(
-            $nfc,
-            $ifc,
-            $pfc,
-            $pwr_ctrl1,
-            $pwr_ctrl2,
-            $pwr_ctrl3,
-            $pwr_ctrl4,
-            $pwr_ctrl5,
-            $v_com_ctrl,
-            $mad_ctrl,
-            $_color_mode,
-            $gamma_positive,
-            $gamma_negative,
-            $invert_display
-        );
-        parent::__construct($width, $height);
-    }
+        $this->format_spec = $this->_generateFormatSpec();
 
-    public function display(DumpedBuffer $buffer): void
-    {
-        $width = $buffer->width ?? $this->width();
-        $height = $buffer->height ?? $this->height();
-        $this->setAddressWindow($buffer->origin_x, $buffer->origin_y, $width, $height);
-        $this->writeFrame($buffer->raw_data);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function __set(string $name, mixed $value): void
-    {
-        match ($name) {
-            'display_on' => $this->setDisplay((bool) $value),
-            'sleep_mode_enabled' => $this->setSleepMode((bool) $value),
-            'frctl_normal' => $this->setFrameRateControlNormal($value),
-            'frctl_idle' => $this->setFrameRateControlIdle($value),
-            'frctl_partial' => $this->setFrameRateControlPartial($value),
-            'power_control1' => $this->setPowerControl1($value),
-            'power_control2' => $this->setPowerControl2($value),
-            'power_control3' => $this->setPowerControl3($value),
-            'power_control4' => $this->setPowerControl4($value),
-            'power_control5' => $this->setPowerControl5($value),
-            'v_com_control' => $this->setVComControl($value),
-            'display_inversion_enabled' => $this->setDisplayInversion((bool) $value),
-            'mad_control' => $this->setMADControl($value),
-            'color_mode' => $this->setPixelFormat($value),
-            'color_gamma_positive' => $this->setGammaPositive($value),
-            'color_gamma_negative' => $this->setGammaNegative($value),
-            'normal_mode_on' => $this->setNormalDisplayMode((bool) $value),
-            default => throw ST7735Exception::invalidProperty($name)
-        };
-    }
-
-    public function __get(string $name): mixed
-    {
-        return match ($name) {
-            'display_on' => $this->display_on,
-            'sleep_mode_enabled' => $this->sleep_mode_on,
-            'color_mode' => $this->_color_mode,
-            default => throw ST7735Exception::invalidProperty($name)
-        };
-    }
-
-    /**
-     * @throws Exception
-     */
-    protected function boot(
-        ST7735NormalFrameRateControl $nfc,
-        ST7735IdleModeFrameRateControl $ifc,
-        ST7735PartialModeFrameRateControl $pfc,
-        ST7735PowerControl1 $pwr_ctrl1,
-        ST7735PowerControl2 $pwr_ctrl2,
-        ST7735PowerControl3 $pwr_ctrl3,
-        ST7735PowerControl4 $pwr_ctrl4,
-        ST7735PowerControl5 $pwr_ctrl5,
-        ST7735VCOMControl1 $v_com_ctrl,
-        ST7735MADControl $mad_ctrl,
-        ST7735ColorMode $color_mode,
-        ST7735GammaPositive $gamma_positive,
-        ST7735GammaNegative $gamma_negative,
-        bool $invert_display,
-    ): void {
-        if (! $this->booted) {
-            $this->carrier->reset();
-
-            $this->displayOff();
-            $this->sleepModeOff();
-            $this->setFrameRateControl($nfc, $ifc, $pfc);
-            $this->setPowerControl(
-                $pwr_ctrl1,
-                $pwr_ctrl2,
-                $pwr_ctrl3,
-                $pwr_ctrl4,
-                $pwr_ctrl5,
-                $v_com_ctrl,
-            );
-
-            if ($invert_display) {
-                $this->displayInversionOn();
-            } else {
-                $this->displayInversionOff();
-            }
-            $this->setMADControl($mad_ctrl);
-            $this->setPixelFormat($color_mode);
-            $this->setColorControl($gamma_positive, $gamma_negative);
-            $this->setNormalDisplayMode(true);
-            $this->displayOn();
-
-            $this->booted = true;
+        if ($boot_now) {
+            $this->boot();
         }
+    }
+
+    public function width(): int
+    {
+        return $this->width;
+    }
+
+    public function height(): int
+    {
+        return $this->height;
+    }
+
+    public function formatSpec(): FormatSpec
+    {
+        return $this->format_spec;
     }
 
     public function generateFormatSpec(): FormatSpec
     {
-        return new FormatSpec(
-            PixelFormat::ROW_MAJOR,
-            BitDepth::from($this->_color_mode->bitsPerPixel()),
-            ScanDirection::TOP_TO_BOTTOM,
-            endianness: Endianness::MSB,
+        $this->format_spec = $this->_generateFormatSpec();
+
+        return $this->format_spec;
+    }
+
+    /**
+     * Frame the target rectangle with the column/row address registers
+     * (panel x/y offsets applied by setAddressWindow), open a RAM write, and
+     * stream the row-major pixel bytes; the transport chunks them by
+     * max_packet_size.
+     */
+    public function transmit(DumpedBuffer $frame): void
+    {
+        $this->setAddressWindow(
+            $frame->origin_x,
+            $frame->origin_y,
+            $frame->width ?? $this->width,
+            $frame->height ?? $this->height
+        );
+
+        $this->command(ST7735OpCode::WRITE_MEMORY_START);
+        $this->data($frame->raw_data);
+    }
+
+    public function close(): void
+    {
+        $this->transport->close();
+    }
+
+    public static function spi(
+        string|int $spi_device,
+        string|int $chip_select,
+        string|int $digital_device,
+        int $dc_pin,
+        int $rst_pin,
+        ?string $spi_adapter = null,
+        ?string $digital_adapter = null,
+        int $width = 128,
+        int $height = 128,
+        int $max_packet_size = 2048,
+        int $x_offset = 0,
+        int $y_offset = 0,
+        bool $invert_display = true,
+        ?ST7735NormalFrameRateControl $nfc = null,
+        ?ST7735IdleModeFrameRateControl $ifc = null,
+        ?ST7735PartialModeFrameRateControl $pfc = null,
+        ?ST7735PowerControl1 $power_control_1 = null,
+        ?ST7735PowerControl2 $power_control_2 = null,
+        ?ST7735PowerControl3 $power_control_3 = null,
+        ?ST7735PowerControl4 $power_control_4 = null,
+        ?ST7735PowerControl5 $power_control_5 = null,
+        ?ST7735VCOMControl1 $v_com_ctrl = null,
+        ?ST7735MADControl $mad_ctrl = null,
+        ST7735ColorMode $color_mode = ST7735ColorMode::COLOR16,
+        ?ST7735GammaPositive $gamma_positive = null,
+        ?ST7735GammaNegative $gamma_negative = null,
+        bool $boot_now = true,
+    ): static {
+
+        $bus = SPI::adapter($spi_adapter)->device($spi_device)
+            ->mode(0)->speed(8000000)->bus();
+
+        $spi = $bus->select($chip_select);
+
+        if(!$bus->canServeDigitalPins())
+        {
+            $bus = DigitalIO::adapter($digital_adapter)->device($digital_device)->bus();
+        }
+
+        $dc = $bus->output($dc_pin);
+        $rst = $bus->output($rst_pin);
+
+        return static::fromSPIBus($spi, $dc, $rst,
+            $width,
+            $height,
+            $max_packet_size,
+            $x_offset,
+            $y_offset,
+            $invert_display,
+            $nfc,
+            $ifc,
+            $pfc,
+            $power_control_1,
+            $power_control_2,
+            $power_control_3,
+            $power_control_4,
+            $power_control_5,
+            $v_com_ctrl,
+            $mad_ctrl,
+            $color_mode,
+            $gamma_positive,
+            $gamma_negative,
+            $boot_now,
         );
     }
 
     /**
+     * @throws ST77xxException
      * @throws Exception
      */
-    public static function connection(string $driver): ST7735Factory
-    {
-        return new ST7735Factory(
-            SPI::connection($driver),
-            GPIO::connection($driver)
+    public static function fromSPIBus(
+        SPIDevice $spi,
+        DigitalOutputPin $dc,
+        DigitalOutputPin $rst,
+        int $width = 128,
+        int $height = 128,
+        int $max_packet_size = 2048,
+        int $x_offset = 0,
+        int $y_offset = 0,
+        bool $invert_display = true,
+        ?ST7735NormalFrameRateControl $nfc = null,
+        ?ST7735IdleModeFrameRateControl $ifc = null,
+        ?ST7735PartialModeFrameRateControl $pfc = null,
+        ?ST7735PowerControl1 $power_control_1 = null,
+        ?ST7735PowerControl2 $power_control_2 = null,
+        ?ST7735PowerControl3 $power_control_3 = null,
+        ?ST7735PowerControl4 $power_control_4 = null,
+        ?ST7735PowerControl5 $power_control_5 = null,
+        ?ST7735VCOMControl1 $v_com_ctrl = null,
+        ?ST7735MADControl $mad_ctrl = null,
+        ST7735ColorMode $color_mode = ST7735ColorMode::COLOR16,
+        ?ST7735GammaPositive $gamma_positive = null,
+        ?ST7735GammaNegative $gamma_negative = null,
+        bool $boot_now = true,
+    ): static {
+
+        $transport = new ST77xxCarrierTransport(spi: $spi, dc: $dc, rst: $rst);
+
+        $nfc ??= ST7735NormalFrameRateControl::fromBytes();
+        $ifc ??= ST7735IdleModeFrameRateControl::fromBytes();
+        $pfc ??= ST7735PartialModeFrameRateControl::fromBytes();
+
+        $power_control_1 ??= new ST7735PowerControl1;
+        $power_control_2 ??= new ST7735PowerControl2;
+        $power_control_3 ??= new ST7735PowerControl3;
+        $power_control_4 ??= new ST7735PowerControl4;
+        $power_control_5 ??= new ST7735PowerControl5;
+        $v_com_ctrl ??= new ST7735VCOMControl1;
+
+        $mad_ctrl ??= new ST7735MADControl(
+            false,
+            true,
+            true,
+            false,
+            true,
+            false,
+        );
+
+        $gamma_positive ??= new ST7735GammaPositive;
+        $gamma_negative ??= new ST7735GammaNegative;
+
+        return new static(
+            $transport,
+            $width,
+            $height,
+            $max_packet_size,
+            $x_offset,
+            $y_offset,
+            $invert_display,
+            $nfc,
+            $ifc,
+            $pfc,
+            $power_control_1,
+            $power_control_2,
+            $power_control_3,
+            $power_control_4,
+            $power_control_5,
+            $v_com_ctrl,
+            $mad_ctrl,
+            $color_mode,
+            $gamma_positive,
+            $gamma_negative,
+            $boot_now,
         );
     }
+
 }

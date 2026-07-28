@@ -37,5 +37,5 @@ enum ST7735OpCode: int
     case GAMMA_CORRECTION_POSITIVE = 0xE0;              // Positive gamma correction (+ 16 bytes)
     case GAMMA_CORRECTION_NEGATIVE = 0xE1;              // Negative gamma correction (+ 16 bytes)
 
-    case POWER_CONTROL_6 = 0xFC;                        // Power control 6 partial+idle (+ 1 byte)
+    case POWER_CONTROL_6 = 0xFC;
 }

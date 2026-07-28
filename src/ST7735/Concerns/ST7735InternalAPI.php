@@ -2,40 +2,28 @@
 
 namespace DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Concerns;
 
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735GammaNegative;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735GammaPositive;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735IdleModeFrameRateControl;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735NormalFrameRateControl;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735PartialModeFrameRateControl;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735PowerControl1;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\DataObjects\ST7735PowerControl2;
+use DeptOfScrapyardRobotics\Displays\ST77xx\Concerns\ST77xxInternalAPI;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735GammaNegative;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735GammaPositive;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735IdleModeFrameRateControl;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735NormalFrameRateControl;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735PartialModeFrameRateControl;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735PowerControl1;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735PowerControl2;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735PowerControl3;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735PowerControl4;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735PowerControl5;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735VCOMControl1;
 use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Enums\ST7735OpCode;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST77xxException;
 
 trait ST7735InternalAPI
 {
-    protected function setDisplay(bool $on): void
-    {
-        $on ? $this->displayOn() : $this->displayOff();
-    }
+    use ST77xxInternalAPI;
 
-    protected function setSleepMode(bool $on): void
+    protected function command(ST7735OpCode $register_hex, array $command_data = []): void
     {
-        $on ? $this->sleepModeOn() : $this->sleepModeOff();
-    }
-
-    protected function setDisplayInversion(bool $on): void
-    {
-        $on ? $this->displayInversionOn() : $this->displayInversionOff();
-    }
-
-    protected function setNormalDisplayMode(bool $on): void
-    {
-        $on ? $this->displayNormalMode() : $this->displayPartialMode();
-    }
-
-    protected function setPartialDisplayMode(bool $on): void
-    {
-        $on ? $this->displayPartialMode() : $this->displayNormalMode();
+        $this->transport->command($register_hex->value, $command_data);
     }
 
     protected function setFrameRateControl(
@@ -51,10 +39,10 @@ trait ST7735InternalAPI
     protected function setPowerControl(
         ST7735PowerControl1 $pwr_ctrl1,
         ST7735PowerControl2 $pwr_ctrl2,
-        $pwr_ctrl3,
-        $pwr_ctrl4,
-        $pwr_ctrl5,
-        $v_com_ctrl,
+        ST7735PowerControl3 $pwr_ctrl3,
+        ST7735PowerControl4 $pwr_ctrl4,
+        ST7735PowerControl5 $pwr_ctrl5,
+        ST7735VCOMControl1 $v_com_ctrl,
     ): void {
         $this->setPowerControl1($pwr_ctrl1);
         $this->setPowerControl2($pwr_ctrl2);
@@ -72,13 +60,32 @@ trait ST7735InternalAPI
         $this->setGammaNegative($gamma_negative);
     }
 
-    protected function command(ST7735OpCode $register_hex, array $command_data = []): void
+    /**
+     * @throws ST77xxException
+     */
+    protected function _boot(): void
     {
-        $this->carrier->command($register_hex, $command_data);
-    }
+        $this->transport = $this->transport->maxPacketSize($this->max_packet_size);
 
-    protected function data(array $data): void
-    {
-        $this->carrier->data($data);
+        $this->deviceReset(10000);
+        $this->displayOff();
+        $this->sleepModeOff();
+        $this->setFrameRateControl($this->_nfc, $this->_ifc, $this->_pfc);
+        $this->setPowerControl(
+            $this->_power_control_1,
+            $this->_power_control_2,
+            $this->_power_control_3,
+            $this->_power_control_4,
+            $this->_power_control_5,
+            $this->_v_com_ctrl,
+        );
+
+        $this->setDisplayInversion($this->_invert_display);
+        $this->setMADControl($this->_mad_ctrl);
+        $this->setPixelFormat($this->_color_mode);
+        $this->setColorControl($this->_gamma_positive, $this->_gamma_negative);
+        $this->setNormalDisplayMode(true);
+        $this->displayOn();
+
     }
 }

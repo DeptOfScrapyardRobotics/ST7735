@@ -2,35 +2,19 @@
 
 namespace DeptOfScrapyardRobotics\Displays\ST77xx\ST7789\Concerns;
 
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7789\DataObjects\ST7789GammaNegative;
-use DeptOfScrapyardRobotics\Displays\ST77xx\ST7789\DataObjects\ST7789GammaPositive;
+use DeptOfScrapyardRobotics\Displays\ST77xx\Concerns\ST77xxInternalAPI;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7789\Breakouts\ST7789GammaNegative;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST7789\Breakouts\ST7789GammaPositive;
 use DeptOfScrapyardRobotics\Displays\ST77xx\ST7789\Enums\ST7789OpCode;
+use DeptOfScrapyardRobotics\Displays\ST77xx\ST77xxException;
 
 trait ST7789InternalAPI
 {
-    protected function setDisplay(bool $on): void
-    {
-        $on ? $this->displayOn() : $this->displayOff();
-    }
+    use ST77xxInternalAPI;
 
-    protected function setSleepMode(bool $on): void
+    protected function command(ST7789OpCode $register_hex, array $command_data = []): void
     {
-        $on ? $this->sleepModeOn() : $this->sleepModeOff();
-    }
-
-    protected function setDisplayInversion(bool $on): void
-    {
-        $on ? $this->displayInversionOn() : $this->displayInversionOff();
-    }
-
-    protected function setNormalDisplayMode(bool $on): void
-    {
-        $on ? $this->displayNormalMode() : $this->displayPartialMode();
-    }
-
-    protected function setPartialDisplayMode(bool $on): void
-    {
-        $on ? $this->displayPartialMode() : $this->displayNormalMode();
+        $this->transport->command($register_hex->value, $command_data);
     }
 
     protected function setColorControl(
@@ -41,13 +25,32 @@ trait ST7789InternalAPI
         $this->setGammaNegative($gamma_negative);
     }
 
-    protected function command(ST7789OpCode $register_hex, array $command_data = []): void
+    /**
+     * @throws ST77xxException
+     */
+    protected function _boot(): void
     {
-        $this->carrier->command($register_hex, $command_data);
-    }
+        $this->transport = $this->transport->maxPacketSize($this->max_packet_size);
 
-    protected function data(array $data): void
-    {
-        $this->carrier->data($data);
+        $this->deviceReset(3000);
+        $this->displayOff();
+        $this->sleepModeOff();
+
+        $this->setMADControl($this->_mad_ctrl);
+        $this->setPixelFormat($this->_color_mode);
+        $this->setPorchControl($this->_porch_ctrl);
+        $this->setGateControl($this->_gate_ctrl);
+        $this->setVComControl($this->_v_com_ctrl);
+        $this->setLcmControl($this->_lcm_ctrl);
+        $this->setVdvVrhEnable($this->_vdv_vrh_enable);
+        $this->setVrh($this->_vrh);
+        $this->setVdv($this->_vdv);
+        $this->setFrameRateControlNormal($this->_frame_rate_ctrl);
+        $this->setPowerControl1($this->_power_control_1);
+        $this->setColorControl($this->_gamma_positive, $this->_gamma_negative);
+
+        $this->displayInversionOn();
+        $this->setNormalDisplayMode(true);
+        $this->displayOn();
     }
 }
