@@ -195,7 +195,7 @@ trait ST7735API
 
     public function setSleepMode(bool $on): void
     {
-        $on ? $this->displayOn() : $this->displayOff();
+        $on ? $this->sleepModeOn() : $this->sleepModeOff();
     }
 
     public function setDisplay(bool $on): void

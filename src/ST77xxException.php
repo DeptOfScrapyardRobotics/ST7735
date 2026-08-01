@@ -20,4 +20,9 @@ class ST77xxException extends CircuitException
     {
         return new static("Valid $field values are between $min and $max, you input $value.");
     }
+
+    public static function spiWriteFailed(string $kind, int $context): static
+    {
+        return new static("ST77xx SPI {$kind} write failed or wrote fewer bytes than expected (context: {$context}). Check wiring, SPI bus permissions, and that the device is powered.");
+    }
 }

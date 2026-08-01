@@ -7,9 +7,9 @@ use Fabricate\Circuits\DataRegister;
 readonly class ST7735MADControl extends DataRegister
 {
     public function __construct(
-        public bool $bottom_top_row_addresses = false,
+        public bool $bottom_top_row_addresses = true,
         public bool $right_left_column_addresses = true,
-        public bool $pixel_direction_vertical = true,
+        public bool $pixel_direction_vertical = false,
         public bool $bottom_top_refresh = false,
         public bool $bgr_order_mode = true,
         public bool $right_left_refresh = false,

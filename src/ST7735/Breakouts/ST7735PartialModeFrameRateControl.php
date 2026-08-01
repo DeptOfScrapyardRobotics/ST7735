@@ -17,10 +17,10 @@ class ST7735PartialModeFrameRateControl
     public ST7735PorchLines $line_inversion_back_porch_lines;
 
     public function __construct(
-        int $dot_inversion_osc_clock_cycles_per_line = 2,
+        int $dot_inversion_osc_clock_cycles_per_line = 1,
         int $dot_inversion_front_porch_lines = 44,
         int $dot_inversion_back_porch_lines = 45,
-        int $line_inversion_osc_clock_cycles_per_line = 2,
+        int $line_inversion_osc_clock_cycles_per_line = 1,
         int $line_inversion_front_porch_lines = 44,
         int $line_inversion_back_porch_lines = 45
     ) {
@@ -46,10 +46,10 @@ class ST7735PartialModeFrameRateControl
     }
 
     public static function fromBytes(
-        int $dot_inversion_osc_clock_cycles_per_line = 2,
+        int $dot_inversion_osc_clock_cycles_per_line = 1,
         int $dot_inversion_front_porch_lines = 44,
         int $dot_inversion_back_porch_lines = 45,
-        int $line_inversion_osc_clock_cycles_per_line = 2,
+        int $line_inversion_osc_clock_cycles_per_line = 1,
         int $line_inversion_front_porch_lines = 44,
         int $line_inversion_back_porch_lines = 45
     ): static {

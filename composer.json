@@ -2,7 +2,7 @@
     "name": "dept-of-scrapyard-robotics/st77xx",
     "description": "Drive ST77xx Full Color TFT displays over SPI with PHP",
     "type": "library",
-    "version": "0.6.0",
+    "version": "0.6.1",
     "keywords": [
         "ssd1306",
         "framework",

@@ -131,7 +131,7 @@ class ST7735 implements CircuitContract, BootSequence, FullColorDisplay, Partial
         int $max_packet_size = 2048,
         int $x_offset = 0,
         int $y_offset = 0,
-        bool $invert_display = true,
+        bool $invert_display = false,
         ?ST7735NormalFrameRateControl $nfc = null,
         ?ST7735IdleModeFrameRateControl $ifc = null,
         ?ST7735PartialModeFrameRateControl $pfc = null,
@@ -198,7 +198,7 @@ class ST7735 implements CircuitContract, BootSequence, FullColorDisplay, Partial
         int $max_packet_size = 2048,
         int $x_offset = 0,
         int $y_offset = 0,
-        bool $invert_display = true,
+        bool $invert_display = false,
         ?ST7735NormalFrameRateControl $nfc = null,
         ?ST7735IdleModeFrameRateControl $ifc = null,
         ?ST7735PartialModeFrameRateControl $pfc = null,
@@ -228,14 +228,7 @@ class ST7735 implements CircuitContract, BootSequence, FullColorDisplay, Partial
         $power_control_5 ??= new ST7735PowerControl5;
         $v_com_ctrl ??= new ST7735VCOMControl1;
 
-        $mad_ctrl ??= new ST7735MADControl(
-            false,
-            true,
-            true,
-            false,
-            true,
-            false,
-        );
+        $mad_ctrl ??= new ST7735MADControl;
 
         $gamma_positive ??= new ST7735GammaPositive;
         $gamma_negative ??= new ST7735GammaNegative;

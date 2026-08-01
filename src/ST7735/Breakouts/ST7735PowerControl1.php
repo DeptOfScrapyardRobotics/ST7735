@@ -10,8 +10,8 @@ readonly class ST7735PowerControl1
 {
     public function __construct(
         public ST7735AnalogVoltageStepUpRatio $avdd = ST7735AnalogVoltageStepUpRatio::V5_0,
-        public ST7735GateDriveVoltage $positive_gvdd = ST7735GateDriveVoltage::V4_50,
-        public ST7735GateDriveVoltage $negative_gvdd = ST7735GateDriveVoltage::V4_50,
+        public ST7735GateDriveVoltage $positive_gvdd = ST7735GateDriveVoltage::V4_60,
+        public ST7735GateDriveVoltage $negative_gvdd = ST7735GateDriveVoltage::V4_60,
         public ST7735PowerMode $power_mode = ST7735PowerMode::AUTO
     ) {}
 
@@ -58,8 +58,8 @@ readonly class ST7735PowerControl1
 
     public static function fromBytes(
         int $avdd = 5,
-        int $positive_gvdd = 4,
-        int $negative_gvdd = 4,
+        int $positive_gvdd = 2,
+        int $negative_gvdd = 2,
         int $power_mode = 2
     ): static {
         return new static(

@@ -11,7 +11,7 @@ class ST7735NormalFrameRateControl
     public ST7735PorchLines $back_porch_lines;
 
     public function __construct(
-        int $osc_clock_cycles_per_line = 2,
+        int $osc_clock_cycles_per_line = 1,
         int $front_porch_lines = 44,
         int $back_porch_lines = 45
     ) {
@@ -30,7 +30,7 @@ class ST7735NormalFrameRateControl
     }
 
     public static function fromBytes(
-        int $osc_clock_cycles_per_line = 2,
+        int $osc_clock_cycles_per_line = 1,
         int $front_porch_lines = 44,
         int $back_porch_lines = 45
     ): static {

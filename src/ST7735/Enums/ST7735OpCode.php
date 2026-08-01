@@ -10,8 +10,8 @@ enum ST7735OpCode: int
     case PARTIAL_MODE_ON = 0x12;
     case NORMAL_MODE_ON = 0x13;
 
-    case DISPLAY_INVERSION_ON = 0x20;
-    case DISPLAY_INVERSION_OFF = 0x21;
+    case DISPLAY_INVERSION_ON = 0x21;
+    case DISPLAY_INVERSION_OFF = 0x20;
 
     case TOGGLE_DISPLAY_OFF = 0x28;
     case TOGGLE_DISPLAY_ON = 0x29;

@@ -67,10 +67,16 @@ trait ST7735InternalAPI
     {
         $this->transport = $this->transport->maxPacketSize($this->max_packet_size);
 
-        $this->deviceReset(10000);
-        $this->displayOff();
+        // The controller ignores commands for up to 120 ms after reset exits.
+        // The old 10 ms delay made cold boots dependent on the panel's prior
+        // power state, which is why a warm panel could work while a fresh boot
+        // remained completely inert.
+        $this->deviceReset(150000);
+        $this->command(ST7735OpCode::SOFTWARE_RESET);
+        usleep(150000);
         $this->sleepModeOff();
         $this->setFrameRateControl($this->_nfc, $this->_ifc, $this->_pfc);
+        $this->command(ST7735OpCode::INVERSION_CONTROL, [0x07]);
         $this->setPowerControl(
             $this->_power_control_1,
             $this->_power_control_2,
@@ -85,7 +91,8 @@ trait ST7735InternalAPI
         $this->setPixelFormat($this->_color_mode);
         $this->setColorControl($this->_gamma_positive, $this->_gamma_negative);
         $this->setNormalDisplayMode(true);
+        usleep(10000);
         $this->displayOn();
-
+        usleep(100000);
     }
 }
