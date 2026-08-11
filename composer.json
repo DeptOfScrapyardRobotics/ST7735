@@ -2,10 +2,12 @@
     "name": "dept-of-scrapyard-robotics/st77xx",
     "description": "Drive ST77xx Full Color TFT displays over SPI with PHP",
     "type": "library",
-    "version": "0.6.1",
+    "version": "0.7.0",
     "keywords": [
-        "ssd1306",
-        "framework",
+        "st7735",
+        "st7789",
+        "st7796",
+        "display",
         "scrapyard-io"
     ],
     "license": "MIT",
@@ -17,21 +19,19 @@
         }
     ],
     "require": {
-        "php": "^8.3",
-        "fabricate/circuits": "^0.6.0",
-        "fabricate/contracts": "^0.6.0",
-        "fabricate/displays": "^0.6.0",
-        "fabricate/framebuffers": "^0.6.0",
-        "gpio/i2c": "^0.6.0",
-        "gpio/spi": "^0.6.0",
-        "gpio/digital": "^0.6.0",
-        "gpio/contracts": "^0.6.0"
+        "php": "^8.4|^8.5|^8.6",
+        "fabricate/nuts-and-bolts": "^0.7.0",
+        "gpio/circuits": "^0.7.0",
+        "gpio/contracts": "^0.7.0",
+        "gpio/digital": "^0.7.0",
+        "gpio/spi": "^0.7.0",
+        "tubes/contracts": "^0.7.0"
     },
     "suggest": {
-        "ext-posi": "^0.5.0",
-        "ext-ftdi": "^0.5.0",
-        "microscrap/posix": "^0.5.0",
-        "microscrap/mpsse": "^0.5.0"
+        "ext-posi": "^0.7.0",
+        "ext-ftdi": "^0.7.0",
+        "microscrap/posix": "^0.7.0",
+        "microscrap/mpsse": "^0.7.0"
     },
     "autoload": {
         "psr-4": {
@@ -45,7 +45,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "0.6.x-dev"
+            "dev-master": "0.7.x-dev"
         },
         "scrapyard-io": {
             "providers": [

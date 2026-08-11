@@ -2,7 +2,7 @@
 
 namespace DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts;
 
-use Fabricate\Circuits\DataRegister;
+use GeneralPurposeIO\Circuits\DataRegister;
 use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\ST7735Exception;
 
 readonly class ST7735PorchLines extends DataRegister

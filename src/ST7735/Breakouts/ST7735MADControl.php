@@ -2,7 +2,7 @@
 
 namespace DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts;
 
-use Fabricate\Circuits\DataRegister;
+use GeneralPurposeIO\Circuits\DataRegister;
 
 readonly class ST7735MADControl extends DataRegister
 {

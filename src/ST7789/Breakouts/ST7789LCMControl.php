@@ -2,7 +2,7 @@
 
 namespace DeptOfScrapyardRobotics\Displays\ST77xx\ST7789\Breakouts;
 
-use Fabricate\Circuits\DataRegister;
+use GeneralPurposeIO\Circuits\DataRegister;
 
 /**
  * LCMCTRL (0xC0) — LCM control, single parameter byte.

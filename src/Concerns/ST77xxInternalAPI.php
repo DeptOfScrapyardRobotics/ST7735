@@ -2,19 +2,22 @@
 
 namespace DeptOfScrapyardRobotics\Displays\ST77xx\Concerns;
 
-use Fabricate\Contracts\Framebuffers\Enums\BitDepth;
-use Fabricate\Contracts\Framebuffers\Enums\Endianness;
-use Fabricate\Contracts\Framebuffers\Enums\PixelFormat;
-use Fabricate\Contracts\Framebuffers\Enums\ScanDirection;
-use Fabricate\Contracts\NutsAndBolts\BootScaffolding;
-use Fabricate\Framebuffers\FormatSpec;
+use ScrapyardIO\Tubes\Contracts\Framebuffers\Enums\BitDepth;
+use ScrapyardIO\Tubes\Contracts\Framebuffers\Enums\Endianness;
+use ScrapyardIO\Tubes\Contracts\Framebuffers\Enums\PixelFormat;
+use ScrapyardIO\Tubes\Contracts\Framebuffers\Enums\ScanDirection;
+use ScrapyardIO\Tubes\Contracts\Framebuffers\FormatSpec;
 use Fabricate\NutsAndBolts\Concerns\Splices16Bits;
+use GeneralPurposeIO\Contracts\Circuits\BootScaffolding;
 
 trait ST77xxInternalAPI
 {
     use BootScaffolding, Splices16Bits;
 
-    protected function data(array $data): void
+    /**
+     * @param  array<int, int>|string  $data
+     */
+    protected function data(array|string $data): void
     {
         $this->transport->data($data);
     }

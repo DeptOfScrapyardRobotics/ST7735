@@ -30,7 +30,10 @@ class ST77xxCarrierTransport
         return $this->spiCommand($register, $command_data);
     }
 
-    public function data(array $data = []): void
+    /**
+     * @param  array<int, int>|string  $data
+     */
+    public function data(array|string $data = []): void
     {
         $this->spiData($data);
     }

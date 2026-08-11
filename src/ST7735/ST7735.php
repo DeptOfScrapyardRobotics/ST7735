@@ -2,6 +2,7 @@
 
 namespace DeptOfScrapyardRobotics\Displays\ST77xx\ST7735;
 
+use DeptOfScrapyardRobotics\Displays\ST77xx\Concerns\ST77xxFillsRgb565;
 use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735GammaNegative;
 use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735GammaPositive;
 use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Breakouts\ST7735IdleModeFrameRateControl;
@@ -20,22 +21,25 @@ use DeptOfScrapyardRobotics\Displays\ST77xx\ST7735\Enums\ST7735OpCode;
 use DeptOfScrapyardRobotics\Displays\ST77xx\ST77xxCarrierTransport;
 use DeptOfScrapyardRobotics\Displays\ST77xx\ST77xxException;
 use Exception;
-use Fabricate\Contracts\Circuits\Attributes\IntegratedCircuit;
-use Fabricate\Contracts\Circuits\IntegratedCircuit as CircuitContract;
-use Fabricate\Contracts\Displays\Interfaces\FullColorDisplay;
-use Fabricate\Contracts\Displays\Interfaces\PartiallyRefreshable;
-use Fabricate\Contracts\NutsAndBolts\BootSequence;
-use Fabricate\Framebuffers\DataObjects\DumpedBuffer;
-use Fabricate\Framebuffers\FormatSpec;
+use GeneralPurposeIO\Circuits\Types\DisplayPanel;
+use GeneralPurposeIO\Contracts\Circuits\Attributes\IntegratedCircuit;
+use GeneralPurposeIO\Contracts\Circuits\Attributes\Pinout;
+use GeneralPurposeIO\Contracts\Circuits\BootSequence;
 use GeneralPurposeIO\Digital\DigitalIO;
 use GeneralPurposeIO\Digital\DigitalOutputPin;
 use GeneralPurposeIO\SPI\SPI;
 use GeneralPurposeIO\SPI\SPIDevice;
+use ScrapyardIO\Tubes\Contracts\Core\SupportsPartialRefresh;
+use ScrapyardIO\Tubes\Contracts\Framebuffers\DumpedBuffer;
+use ScrapyardIO\Tubes\Contracts\Framebuffers\FormatSpec;
+use ScrapyardIO\Tubes\Contracts\Panels\FullColorDisplay;
 
-#[IntegratedCircuit('SPI', 'DigitalIO')]
-class ST7735 implements CircuitContract, BootSequence, FullColorDisplay, PartiallyRefreshable
+#[IntegratedCircuit(['SPI', 'DigitalIO'])]
+#[Pinout(['SPI' => ['driver', 'device', 'chip_select'], 'DigitalIO' => ['driver', 'device', 'dc', 'rst']])]
+class ST7735 extends DisplayPanel implements BootSequence, FullColorDisplay, SupportsPartialRefresh
 {
     use ST7735API;
+    use ST77xxFillsRgb565;
 
     protected FormatSpec $format_spec;
 

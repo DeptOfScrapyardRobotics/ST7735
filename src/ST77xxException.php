@@ -2,7 +2,7 @@
 
 namespace DeptOfScrapyardRobotics\Displays\ST77xx;
 
-use Fabricate\Contracts\Circuits\CircuitException;
+use GeneralPurposeIO\Contracts\Circuits\CircuitException;
 
 class ST77xxException extends CircuitException
 {

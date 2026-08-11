@@ -2,7 +2,7 @@
 
 namespace DeptOfScrapyardRobotics\Displays\ST77xx\ST7789\Breakouts;
 
-use Fabricate\Circuits\DataRegister;
+use GeneralPurposeIO\Circuits\DataRegister;
 
 /**
  * MADCTL (0x36) — memory data access control, single parameter byte.

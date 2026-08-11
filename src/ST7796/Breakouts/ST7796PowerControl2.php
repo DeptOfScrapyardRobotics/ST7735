@@ -2,7 +2,7 @@
 
 namespace DeptOfScrapyardRobotics\Displays\ST77xx\ST7796\Breakouts;
 
-use Fabricate\Circuits\DataRegister;
+use GeneralPurposeIO\Circuits\DataRegister;
 use DeptOfScrapyardRobotics\Displays\ST77xx\ST77xxException;
 
 /**

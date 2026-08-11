@@ -2,6 +2,7 @@
 
 namespace DeptOfScrapyardRobotics\Displays\ST77xx\ST7789;
 
+use DeptOfScrapyardRobotics\Displays\ST77xx\Concerns\ST77xxFillsRgb565;
 use DeptOfScrapyardRobotics\Displays\ST77xx\ST7789\Breakouts\ST7789FrameRateControl;
 use DeptOfScrapyardRobotics\Displays\ST77xx\ST7789\Breakouts\ST7789GammaNegative;
 use DeptOfScrapyardRobotics\Displays\ST77xx\ST7789\Breakouts\ST7789GammaPositive;
@@ -20,22 +21,25 @@ use DeptOfScrapyardRobotics\Displays\ST77xx\ST7789\Enums\ST7789OpCode;
 use DeptOfScrapyardRobotics\Displays\ST77xx\ST77xxCarrierTransport;
 use DeptOfScrapyardRobotics\Displays\ST77xx\ST77xxException;
 use Exception;
-use Fabricate\Contracts\Circuits\Attributes\IntegratedCircuit;
-use Fabricate\Contracts\Circuits\IntegratedCircuit as CircuitContract;
-use Fabricate\Contracts\Displays\Interfaces\FullColorDisplay;
-use Fabricate\Contracts\Displays\Interfaces\PartiallyRefreshable;
-use Fabricate\Contracts\NutsAndBolts\BootSequence;
-use Fabricate\Framebuffers\DataObjects\DumpedBuffer;
-use Fabricate\Framebuffers\FormatSpec;
+use GeneralPurposeIO\Circuits\Types\DisplayPanel;
+use GeneralPurposeIO\Contracts\Circuits\Attributes\IntegratedCircuit;
+use GeneralPurposeIO\Contracts\Circuits\Attributes\Pinout;
+use GeneralPurposeIO\Contracts\Circuits\BootSequence;
 use GeneralPurposeIO\Digital\DigitalIO;
 use GeneralPurposeIO\Digital\DigitalOutputPin;
 use GeneralPurposeIO\SPI\SPI;
 use GeneralPurposeIO\SPI\SPIDevice;
+use ScrapyardIO\Tubes\Contracts\Core\SupportsPartialRefresh;
+use ScrapyardIO\Tubes\Contracts\Framebuffers\DumpedBuffer;
+use ScrapyardIO\Tubes\Contracts\Framebuffers\FormatSpec;
+use ScrapyardIO\Tubes\Contracts\Panels\FullColorDisplay;
 
-#[IntegratedCircuit('SPI', 'DigitalIO')]
-class ST7789 implements CircuitContract, BootSequence, FullColorDisplay, PartiallyRefreshable
+#[IntegratedCircuit(['SPI', 'DigitalIO'])]
+#[Pinout(['SPI' => ['driver', 'device', 'chip_select'], 'DigitalIO' => ['driver', 'device', 'dc', 'rst']])]
+class ST7789 extends DisplayPanel implements BootSequence, FullColorDisplay, SupportsPartialRefresh
 {
     use ST7789API;
+    use ST77xxFillsRgb565;
 
     protected FormatSpec $format_spec;
 
